@@ -109,8 +109,7 @@ app.post('/login/google-login', async (req, res) => {
                 email: userData.email,
                 grade: userData.grade,
                 class: userData.class,
-                number: userData.number,
-                picture: `https://plus.google.com/s2/photos/profile/${userData.googleId}`
+                number: userData.number
             }
         })
     } catch (error) {
