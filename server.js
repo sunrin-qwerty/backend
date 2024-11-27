@@ -3,10 +3,10 @@ const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const { OAuth2Client } = require('google-auth-library')
 const jwt = require('jsonwebtoken')
+const { initializeDb } = require('./db/database')
 require('dotenv').config()
 
-const punycode = require('punycode')
-global.Punycode = punycode
+let db
 
 const app = express()
 const PORT = process.env.PORT || 3000
@@ -29,29 +29,72 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your_jwt_secret'
 app.post('/login/google-login', async (req, res) => {
     try {
         const { token } = req.body
-        
         const ticket = await oauth2Client.verifyIdToken({
             idToken: token,
             audience: process.env.GOOGLE_CLIENT_ID
         })
         
         const payload = ticket.getPayload()
+        const email = payload['email']
+        const emailParts = email.split('@')[0].match(/(\d{2})sunrin(\d{3})/)
         
-        const userData = {
-            googleId: payload['sub'],
-            email: payload['email'],
-            name: payload['name'],
-            picture: payload['picture']
-        }
-        
-        const emailDomain = userData.email.split('@')[1]
-        if (emailDomain !== 'sunrint.hs.kr') {
-            console.log(`[LOGIN DENIED] Non-school email: ${userData.email}`)
-            return res.status(403).json({ 
-                error: '학교 계정으로 로그인해주세요.',
-                message: '선린인터넷고등학교 이메일로만 로그인 가능합니다.'
+        if (!emailParts || email.split('@')[1] !== 'sunrint.hs.kr') {
+            return res.status(403).json({
+                error: '잘못된 이메일 형식입니다.',
+                message: '올바른 학교 이메일을 사용해주세요.'
             })
         }
+
+        const [, admissionYear, studentNumber] = emailParts
+        const nameMatch = payload['name'].match(/(\d)(\d{2})(\d{2})(.+)/)
+        
+        if (!nameMatch) {
+            return res.status(403).json({
+                error: '잘못된 이름 형식입니다.',
+                message: '이름을 학번 형식에 맞게 설정해주세요.'
+            })
+        }
+
+        const [, grade, classNum, number, realName] = nameMatch
+        const userData = {
+            googleId: payload['sub'],
+            email,
+            name: realName,
+            picture: payload['picture'],
+            admissionYear: parseInt(admissionYear),
+            studentNumber: parseInt(studentNumber),
+            grade: parseInt(grade),
+            class: parseInt(classNum),
+            number: parseInt(number)
+        }
+
+        await db.run(`
+            INSERT INTO users (
+                google_id, email, name, picture, 
+                admission_year, student_number, 
+                grade, class, number
+            ) 
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(google_id) DO UPDATE SET
+                email=excluded.email,
+                name=excluded.name,
+                picture=excluded.picture,
+                admission_year=excluded.admission_year,
+                student_number=excluded.student_number,
+                grade=excluded.grade,
+                class=excluded.class,
+                number=excluded.number
+        `, [
+            userData.googleId,
+            userData.email,
+            userData.name,
+            userData.picture,
+            userData.admissionYear,
+            userData.studentNumber,
+            userData.grade,
+            userData.class,
+            userData.number
+        ])
         
         const userToken = jwt.sign(userData, JWT_SECRET, { expiresIn: '1h' })
         
@@ -62,18 +105,19 @@ app.post('/login/google-login', async (req, res) => {
             maxAge: 3600000
         })
         
-        console.log(`[LOGIN SUCCESS] User ${userData.name} (${userData.email}) logged in successfully`)
-        
         res.status(200).json({
             message: '로그인에 성공했습니다.',
             user: {
                 name: userData.name,
                 email: userData.email,
-                picture: userData.picture
+                picture: userData.picture,
+                grade: userData.grade,
+                class: userData.class,
+                number: userData.number
             }
         })
     } catch (error) {
-        console.error('[LOGIN ERROR] Google login error:', error)
+        console.error('[LOGIN ERROR]:', error)
         res.status(401).json({ 
             error: '로그인에 실패했습니다.',
             details: error.message 
@@ -81,36 +125,49 @@ app.post('/login/google-login', async (req, res) => {
     }
 })
 
-app.get('/check-auth', authenticateToken, (req, res) => {
-    res.json({
-        name: req.user.name,
-        email: req.user.email,
-        picture: req.user.picture
-    })
+app.get('/check-auth', authenticateToken, async (req, res) => {
+    try {
+        const user = await db.get('SELECT * FROM users WHERE google_id = ?', [req.user.googleId])
+        if (user) {
+            res.json({
+                name: user.name,
+                email: user.email,
+                picture: user.picture,
+                grade: user.grade,
+                class: user.class,
+                number: user.number
+            })
+        } else {
+            res.status(404).json({ error: 'User not found' })
+        }
+    } catch (error) {
+        res.status(500).json({ error: 'Database error' })
+    }
 })
 
 app.post('/logout', (req, res) => {
     res.clearCookie('authToken')
-    console.log('[LOGOUT] User logged out successfully')
     res.status(200).json({ message: '로그아웃되었습니다.' })
 })
 
 function authenticateToken(req, res, next) {
     const token = req.cookies.authToken
-    
     try {
         const user = jwt.verify(token, JWT_SECRET)
         req.user = user
         next()
     } catch (error) {
-        console.log('[AUTH CHECK] Invalid token')
         res.status(403).json({ error: 'Invalid token' })
     }
 }
 
-app.listen(PORT, () => {
-    console.log(`[SERVER] Running on port ${PORT}`)
-    console.log(`[SERVER] Environment: ${process.env.NODE_ENV || 'development'}`)
-})
+const startServer = async () => {
+    db = await initializeDb()
+    app.listen(PORT, () => {
+        console.log(`[SERVER] Running on port ${PORT}`)
+    })
+}
+
+startServer()
 
 module.exports = app
