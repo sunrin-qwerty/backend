@@ -69,11 +69,11 @@ app.post('/login/google-login', async (req, res) => {
 
         await db.run(`
             INSERT INTO users (
-                google_id, email, name, 
+                google_id, email, name,
                 admission_year, student_number, 
                 grade, class, number
             ) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(google_id) DO UPDATE SET
                 email=excluded.email,
                 name=excluded.name,
@@ -109,7 +109,8 @@ app.post('/login/google-login', async (req, res) => {
                 email: userData.email,
                 grade: userData.grade,
                 class: userData.class,
-                number: userData.number
+                number: userData.number,
+                picture: `https://plus.google.com/s2/photos/profile/${userData.googleId}`
             }
         })
     } catch (error) {
@@ -130,7 +131,8 @@ app.get('/check-auth', authenticateToken, async (req, res) => {
                 email: user.email,
                 grade: user.grade,
                 class: user.class,
-                number: user.number
+                number: user.number,
+                picture: `https://plus.google.com/s2/photos/profile/${userData.googleId}`
             })
         } else {
             res.status(404).json({ error: 'User not found' })
