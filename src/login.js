@@ -1,33 +1,12 @@
-// src/server.js
-const express = require('express')
-const cors = require('cors')
-const cookieParser = require('cookie-parser')
-const { OAuth2Client } = require('google-auth-library')
 const jwt = require('jsonwebtoken')
-const { initializeDb } = require('./src/database')
-const { authenticateToken } = require('./src/auth')
-const { handleGoogleLogin } = require('./src/login')
-require('dotenv').config()
-
-let db
-const app = express()
-const PORT = 3000
-
-app.use(cors({
-    origin: 'http://localhost:5173',
-    credentials: true,
-    methods: ['GET', 'POST', 'OPTIONS']
-}))
-app.use(express.json())
-app.use(cookieParser())
-app.post('/login/google-login', (req, res) => handleGoogleLogin(req, res, db))
+const { OAuth2Client } = require('google-auth-library')
 
 const oauth2Client = new OAuth2Client(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET
 )
 
-app.post('/login/google-login', async (req, res) => {
+async function handleGoogleLogin(req, res, db) {
     try {
         const { token } = req.body
         const ticket = await oauth2Client.verifyIdToken({
@@ -110,8 +89,7 @@ app.post('/login/google-login', async (req, res) => {
                 email: userData.email,
                 grade: userData.grade,
                 class: userData.class,
-                number: userData.number,
-                picture: `https://plus.google.com/s2/photos/profile/${userData.googleId}`
+                number: userData.number
             }
         })
     } catch (error) {
@@ -121,40 +99,6 @@ app.post('/login/google-login', async (req, res) => {
             details: error.message 
         })
     }
-})
-
-app.get('/check-auth', authenticateToken, async (req, res) => {
-    try {
-        const user = await db.get('SELECT * FROM users WHERE google_id = ?', [req.user.googleId])
-        if (user) {
-            res.json({
-                name: user.name,
-                email: user.email,
-                grade: user.grade,
-                class: user.class,
-                number: user.number,
-                picture: `https://plus.google.com/s2/photos/profile/${user.google_id}`
-            })
-        } else {
-            res.status(404).json({ error: 'User not found' })
-        }
-    } catch (error) {
-        res.status(500).json({ error: 'Database error' })
-    }
-})
-
-app.post('/logout', (req, res) => {
-    res.clearCookie('authToken')
-    res.status(200).json({ message: '로그아웃되었습니다.' })
-})
-
-const startServer = async () => {
-    db = await initializeDb()
-    app.listen(PORT, () => {
-        console.log(`[SERVER] Running on port ${PORT}`)
-    })
 }
 
-startServer()
-
-module.exports = app
+module.exports = { handleGoogleLogin }
