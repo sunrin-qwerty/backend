@@ -14,7 +14,6 @@ const initializeDb = async () => {
             google_id TEXT UNIQUE,
             email TEXT UNIQUE,
             name TEXT,
-            picture TEXT,
             admission_year INTEGER,
             student_number INTEGER,
             grade INTEGER,

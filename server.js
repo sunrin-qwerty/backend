@@ -60,7 +60,6 @@ app.post('/login/google-login', async (req, res) => {
             googleId: payload['sub'],
             email,
             name: realName,
-            picture: payload['picture'],
             admissionYear: parseInt(admissionYear),
             studentNumber: parseInt(studentNumber),
             grade: parseInt(grade),
@@ -70,7 +69,7 @@ app.post('/login/google-login', async (req, res) => {
 
         await db.run(`
             INSERT INTO users (
-                google_id, email, name, picture, 
+                google_id, email, name, 
                 admission_year, student_number, 
                 grade, class, number
             ) 
@@ -78,7 +77,6 @@ app.post('/login/google-login', async (req, res) => {
             ON CONFLICT(google_id) DO UPDATE SET
                 email=excluded.email,
                 name=excluded.name,
-                picture=excluded.picture,
                 admission_year=excluded.admission_year,
                 student_number=excluded.student_number,
                 grade=excluded.grade,
@@ -88,7 +86,6 @@ app.post('/login/google-login', async (req, res) => {
             userData.googleId,
             userData.email,
             userData.name,
-            userData.picture,
             userData.admissionYear,
             userData.studentNumber,
             userData.grade,
@@ -110,7 +107,6 @@ app.post('/login/google-login', async (req, res) => {
             user: {
                 name: userData.name,
                 email: userData.email,
-                picture: userData.picture,
                 grade: userData.grade,
                 class: userData.class,
                 number: userData.number
@@ -132,7 +128,6 @@ app.get('/check-auth', authenticateToken, async (req, res) => {
             res.json({
                 name: user.name,
                 email: user.email,
-                picture: user.picture,
                 grade: user.grade,
                 class: user.class,
                 number: user.number
