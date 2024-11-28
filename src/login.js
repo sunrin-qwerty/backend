@@ -21,7 +21,7 @@ async function handleGoogleLogin(req, res, db) {
         if (!emailParts || email.split('@')[1] !== 'sunrint.hs.kr') {
             return res.status(403).json({
                 error: '잘못된 이메일 형식입니다.',
-                message: '올바른 학교 이메일을 사용해주세요.'
+                message: '도메인이 sunrint.hs.kr인 학교 이메일을 사용해주세요.'
             })
         }
 
