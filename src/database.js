@@ -23,6 +23,17 @@ const initializeDb = async () => {
         )
     `)
 
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS assignment (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            content TEXT NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            deadline DATETIME,
+            
+        )   
+    `)
+
     return db
 }
 
