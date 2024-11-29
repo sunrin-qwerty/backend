@@ -4,7 +4,7 @@ const { authenticateToken } = require('./auth')
 const router = express.Router()
 
 router.get('/', authenticateToken, async (req, res) => {
-    const db = req.app.locals.db  // db는 app.locals에서 가져옴
+    const db = req.app.locals.db 
     try {
         const user = await db.get('SELECT * FROM users WHERE google_id = ?', [req.user.googleId])
         if (user) {
