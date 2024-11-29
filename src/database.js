@@ -30,8 +30,21 @@ const initializeDb = async () => {
             content TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             deadline DATETIME,
-            
+            githubLink TEXT
         )   
+    `)
+
+
+    await db.exec(`
+        CREATE TABLE IF NOT EXISTS submission (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            assignment_id INTEGER,
+            submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            submission_link TEXT,
+            FOREIGN KEY (user_id) REFERENCES users(id),
+            FOREIGN KEY (assignment_id) REFERENCES assignment(id)
+        )
     `)
 
     return db
