@@ -13,6 +13,7 @@ const initializeDb = async () => {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             google_id TEXT UNIQUE,
             email TEXT UNIQUE,
+            student_id INTEGER,
             name TEXT,
             admission_year INTEGER,
             student_number INTEGER,

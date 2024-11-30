@@ -36,10 +36,12 @@ async function handleGoogleLogin(req, res, db) {
         }
 
         const [, grade, classNum, number, realName] = nameMatch
+        const studentId = `${grade}${classNum}${number}`
         const userData = {
             googleId: payload['sub'],
             email,
             name: realName,
+            studentId: parseInt(studentId),
             admissionYear: parseInt(admissionYear),
             studentNumber: parseInt(studentNumber),
             grade: parseInt(grade),
@@ -49,13 +51,14 @@ async function handleGoogleLogin(req, res, db) {
 
         await db.run(`
             INSERT INTO users (
-                google_id, email, name,
+                google_id, email, student_id, name,
                 admission_year, student_number, 
                 grade, class, number
             ) 
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(google_id) DO UPDATE SET
                 email=excluded.email,
+                student_id=excluded.student_id,
                 name=excluded.name,
                 admission_year=excluded.admission_year,
                 student_number=excluded.student_number,
@@ -65,6 +68,7 @@ async function handleGoogleLogin(req, res, db) {
         `, [
             userData.googleId,
             userData.email,
+            userData.studentId,
             userData.name,
             userData.admissionYear,
             userData.studentNumber,
@@ -86,6 +90,7 @@ async function handleGoogleLogin(req, res, db) {
             message: '로그인에 성공했습니다.',
             user: {
                 name: userData.name,
+                studentId: userData.studentId,
                 email: userData.email,
                 grade: userData.grade,
                 class: userData.class,

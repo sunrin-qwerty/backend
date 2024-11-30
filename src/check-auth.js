@@ -10,6 +10,7 @@ router.get('/', authenticateToken, async (req, res) => {
         if (user) {
             res.json({
                 name: user.name,
+                student_id: user.student_id,
                 email: user.email,
                 grade: user.grade,
                 class: user.class,
