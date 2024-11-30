@@ -4,6 +4,7 @@ const cookieParser = require('cookie-parser')
 const { initializeDb } = require('./src/database')
 const { handleGoogleLogin } = require('./src/login')
 const checkAuthRouter = require('./src/check-auth')
+const assignmentRouter = require('./src/assignment')
 let db
 const app = express()
 const PORT = 3000
@@ -25,6 +26,7 @@ const startServer = async () => {
 
     app.use('/check-auth', checkAuthRouter)
     app.post('/login/google-login', (req, res) => handleGoogleLogin(req, res, db))
+    app.post('/assignment', assignmentRouter)
 
     app.post('/logout', (req, res) => {
         res.clearCookie('authToken')
