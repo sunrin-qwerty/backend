@@ -14,8 +14,7 @@ router.get('/', authenticateToken, async (req, res) => {
                 email: user.email,
                 grade: user.grade,
                 class: user.class,
-                number: user.number,
-                picture: `https://plus.google.com/s2/photos/profile/${user.google_id}`
+                number: user.number
             })
         } else {
             res.status(404).json({ error: 'User not found' })
