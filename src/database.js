@@ -30,8 +30,7 @@ const initializeDb = async () => {
             title TEXT NOT NULL,
             content TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-            deadline DATETIME,
-            githubLink TEXT
+            deadline DATETIME
         )   
     `)
 
@@ -43,6 +42,7 @@ const initializeDb = async () => {
             assignment_id INTEGER,
             submitted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             submission_link TEXT,
+            github_link TEXT,
             FOREIGN KEY (user_id) REFERENCES users(id),
             FOREIGN KEY (assignment_id) REFERENCES assignment(id)
         )
