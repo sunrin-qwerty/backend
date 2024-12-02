@@ -27,6 +27,7 @@ const startServer = async () => {
     app.use('/check-auth', checkAuthRouter)
     app.post('/login/google-login', (req, res) => handleGoogleLogin(req, res, db))
     app.post('/assignment', assignmentRouter)
+    app.use('/assignment', assignmentRouter)
 
     app.post('/logout', (req, res) => {
         res.clearCookie('authToken')
