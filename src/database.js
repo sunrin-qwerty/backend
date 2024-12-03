@@ -20,6 +20,7 @@ const initializeDb = async () => {
             grade INTEGER,
             class INTEGER,
             number INTEGER,
+            member BOOLEAN DEFAULT FALSE,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
     `)
