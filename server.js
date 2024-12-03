@@ -5,29 +5,28 @@ const { initializeDb } = require('./src/database')
 const { handleGoogleLogin } = require('./src/login')
 const checkAuthRouter = require('./src/check-auth')
 const assignmentRouter = require('./src/assignment')
-let db
+require('dotenv').config()
+
 const app = express()
 const PORT = 3000
-require('dotenv').config()
 
 app.use(cors({
     origin: 'http://localhost:5173',
     credentials: true,
-    methods: ['GET', 'POST', 'OPTIONS']
+    methods: ['GET', 'POST', 'OPTIONS'],
 }))
 
 app.use(express.json())
 app.use(cookieParser())
 
 const startServer = async () => {
-    db = await initializeDb()
+    const db = await initializeDb()
     app.locals.db = db
 
-
     app.use('/check-auth', checkAuthRouter)
+    app.use('/assignments', assignmentRouter)
+
     app.post('/login/google-login', (req, res) => handleGoogleLogin(req, res, db))
-    app.post('/assignment', assignmentRouter)
-    app.use('/assignment', assignmentRouter)
 
     app.post('/logout', (req, res) => {
         res.clearCookie('authToken')
