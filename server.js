@@ -8,7 +8,7 @@ const assignmentRouter = require('./src/assignment')
 require('dotenv').config()
 
 const app = express()
-const PORT = 3000
+const PORT = 3008
 
 app.use(cors({
     origin: 'http://localhost:5173',
