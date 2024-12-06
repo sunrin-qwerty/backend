@@ -5,10 +5,11 @@ const { initializeDb } = require('./src/database')
 const { handleGoogleLogin } = require('./src/login')
 const checkAuthRouter = require('./src/check-auth')
 const assignmentRouter = require('./src/assignment')
+const applyRouter = require('./src/apply')
 require('dotenv').config()
 
 const app = express()
-const PORT = 3008
+const PORT = 3000
 
 app.use(cors({
     origin: 'http://localhost:5173',
@@ -25,6 +26,7 @@ const startServer = async () => {
 
     app.use('/check-auth', checkAuthRouter)
     app.use('/assignments', assignmentRouter)
+    app.use('/apply', applyRouter)
 
     app.post('/login/google-login', (req, res) => handleGoogleLogin(req, res, db))
 

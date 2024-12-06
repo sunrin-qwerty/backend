@@ -1,12 +1,12 @@
-const sqlite3 = require('sqlite3')
-const { open } = require('sqlite')
-const path = require('path')
+const sqlite3 = require('sqlite3');
+const { open } = require('sqlite');
+const path = require('path');
 
 const initializeDb = async () => {
     const db = await open({
         filename: path.join(__dirname, '../db.sqlite'),
         driver: sqlite3.Database
-    })
+    });
 
     await db.exec(`
         CREATE TABLE IF NOT EXISTS users (
@@ -23,7 +23,7 @@ const initializeDb = async () => {
             member BOOLEAN DEFAULT FALSE,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
         )
-    `)
+    `);
 
     await db.exec(`
         CREATE TABLE IF NOT EXISTS assignment (
@@ -32,9 +32,8 @@ const initializeDb = async () => {
             content TEXT NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
             deadline DATETIME
-        )   
-    `)
-
+        )
+    `);
 
     await db.exec(`
         CREATE TABLE IF NOT EXISTS submission (
@@ -47,9 +46,22 @@ const initializeDb = async () => {
             FOREIGN KEY (user_id) REFERENCES users(id),
             FOREIGN KEY (assignment_id) REFERENCES assignment(id)
         )
-    `)
+    `);
 
-    return db
-}
+    await db.exec(`
+        CREATE TABLE apply (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER,
+            name TEXT NOT NULL,
+            phone_number TEXT NOT NULL,
+            email TEXT NOT NULL,
+            cover_letter TEXT NOT NULL,
+            portfolio TEXT NOT NULL,
+            applied_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        );
+    `);
 
-module.exports = { initializeDb }
+    return db;
+};
+
+module.exports = { initializeDb };
