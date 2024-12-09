@@ -49,7 +49,7 @@ const initializeDb = async () => {
     `);
 
     await db.exec(`
-        CREATE TABLE apply (
+        CREATE TABLE IF NOT EXISTS apply (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
             name TEXT NOT NULL,
