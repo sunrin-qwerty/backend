@@ -7,7 +7,7 @@ router.post('/', authenticateToken, async (req, res) => {
     const db = req.app.locals.db;
     const { name, phone_number, email, cover_letter, portfolio } = req.body;
 
-    if (!name || !phone_number || !email || !cover_letter || !portfolio) {
+    if (!name || !phone_number || !email || !cover_letter) {
         return res.status(400).json({ error: 'All fields are required' });
     }
 
