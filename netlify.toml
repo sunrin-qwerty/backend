@@ -1,0 +1,40 @@
+# 기본 빌드 설정
+[build]
+  # 빌드 명령어
+  command = "npm run build"
+  # 빌드된 파일이 위치할 디렉토리
+  publish = "dist"
+
+# 개발 환경 설정
+[dev]
+  framework = "react"
+  command = "npm run dev"
+  port = 3000
+  publish = "dist"
+  targetPort = 3000
+
+# 리다이렉트 설정
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# 헤더 설정
+[[headers]]
+  for = "/*"
+    [headers.values]
+    X-Frame-Options = "DENY"
+    X-XSS-Protection = "1; mode=block"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# 환경 변수 설정
+[context.production.environment]
+  NODE_VERSION = "18.16.0"
+
+# 프로덕션이 아닌 환경을 위한 설정
+[context.branch-deploy]
+  command = "npm run build:staging"
+
+[context.deploy-preview]
+  command = "npm run build:preview"
